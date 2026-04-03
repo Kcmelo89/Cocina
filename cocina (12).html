@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oído Cocina</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: sans-serif; background: #F2F0F8; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.card { background: white; border-radius: 16px; padding: 28px 24px; width: 100%; max-width: 380px; }
+h1 { font-size: 22px; margin-bottom: 4px; }
+p { font-size: 13px; color: #888; margin-bottom: 20px; }
+.tabs { display: flex; gap: 4px; background: #F2F0F8; border-radius: 10px; padding: 4px; margin-bottom: 20px; }
+.tab { flex: 1; padding: 10px; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; background: transparent; color: #888; }
+.tab.active { background: #7C5CBF; color: white; }
+input { width: 100%; padding: 12px 14px; border: 1.5px solid #E4E2EF; border-radius: 10px; font-size: 15px; margin-bottom: 10px; outline: none; }
+input:focus { border-color: #7C5CBF; }
+button.main { width: 100%; padding: 14px; background: #7C5CBF; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; }
+.error { color: #C0392B; font-size: 13px; font-weight: 600; margin-bottom: 10px; min-height: 18px; }
+#status { margin-top: 16px; padding: 12px; background: #E8F8EF; border-radius: 10px; font-size: 14px; font-weight: 600; color: #276749; display: none; text-align: center; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Oído Cocina</h1>
+  <p>Test de autenticación Firebase</p>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-login">Entrar</button>
+    <button class="tab" id="tab-register">Registrarse</button>
+  </div>
+
+  <div id="form-login">
+    <input type="email" id="login-email" placeholder="Email">
+    <input type="password" id="login-password" placeholder="Contraseña">
+    <div class="error" id="login-error"></div>
+    <button class="main" id="btn-login">Entrar</button>
+  </div>
+
+  <div id="form-register" style="display:none">
+    <input type="text" id="reg-name" placeholder="Tu nombre">
+    <input type="email" id="reg-email" placeholder="Email">
+    <input type="password" id="reg-password" placeholder="Contraseña (mín. 6 caracteres)">
+    <div class="error" id="reg-error"></div>
+    <button class="main" id="btn-register">Crear cuenta</button>
+  </div>
+
+  <div id="status"></div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+const app = initializeApp({
+  apiKey: "AIzaSyAim_VmXreXbnJywvNZUjFU245N-a5aALs",
+  authDomain: "oido-cocina-65227.firebaseapp.com",
+  projectId: "oido-cocina-65227",
+  storageBucket: "oido-cocina-65227.firebasestorage.app",
+  messagingSenderId: "287265380412",
+  appId: "1:287265380412:web:78a6f8b9033ab221bc4b39"
+});
+
+const auth = getAuth(app);
+
+function showStatus(msg) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+onAuthStateChanged(auth, user => {
+  if (user) {
+    showStatus('✓ Sesión iniciada como: ' + user.email);
+    document.querySelector('.card').innerHTML = `
+      <h1>¡Bienvenida!</h1>
+      <p style="margin-bottom:20px">Has iniciado sesión como <strong>${user.email}</strong></p>
+      <button class="main" id="btn-logout">Cerrar sesión</button>
+    `;
+    document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
+  }
+});
+
+document.getElementById('tab-login').addEventListener('click', () => {
+  document.getElementById('tab-login').classList.add('active');
+  document.getElementById('tab-register').classList.remove('active');
+  document.getElementById('form-login').style.display = 'block';
+  document.getElementById('form-register').style.display = 'none';
+});
+
+document.getElementById('tab-register').addEventListener('click', () => {
+  document.getElementById('tab-register').classList.add('active');
+  document.getElementById('tab-login').classList.remove('active');
+  document.getElementById('form-register').style.display = 'block';
+  document.getElementById('form-login').style.display = 'none';
+});
+
+document.getElementById('btn-login').addEventListener('click', async () => {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-password').value;
+  document.getElementById('login-error').textContent = '';
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) {
+    document.getElementById('login-error').textContent = e.message;
+  }
+});
+
+document.getElementById('btn-register').addEventListener('click', async () => {
+  const email = document.getElementById('reg-email').value.trim();
+  const pass = document.getElementById('reg-password').value;
+  document.getElementById('reg-error').textContent = '';
+  try {
+    await createUserWithEmailAndPassword(auth, email, pass);
+  } catch(e) {
+    document.getElementById('reg-error').textContent = e.message;
+  }
+});
+</script>
+</body>
+</html>
